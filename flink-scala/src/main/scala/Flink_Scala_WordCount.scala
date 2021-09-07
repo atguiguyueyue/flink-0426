@@ -1,6 +1,4 @@
 import org.apache.flink.streaming.api.scala._
-
-
 object Flink_Scala_WordCount {
   def main(args: Array[String]): Unit = {
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment

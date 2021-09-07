@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -13,9 +14,12 @@ import org.apache.flink.util.Collector;
 public class Flink03_Unbounded_WordCount {
     public static void main(String[] args) throws Exception {
         //1.获取流的执行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
 
-        env.setParallelism(1);
+        env.setParallelism(3);
+        //全局都断开
+        env.disableOperatorChaining();
 
         //2.读取无界的数据
         DataStreamSource<String> streamSource = env.socketTextStream("hadoop102", 9999);
@@ -30,6 +34,8 @@ public class Flink03_Unbounded_WordCount {
                 }
             }
         });
+                //与前后都断开
+//                .disableChaining();
 
         //4.将上游flatmap发送过来的每一个单词组成Tuple2
         SingleOutputStreamOperator<Tuple2<String, Integer>> wordToOneStream = wordStream.map(new MapFunction<String, Tuple2<String, Integer>>() {
@@ -37,7 +43,12 @@ public class Flink03_Unbounded_WordCount {
             public Tuple2<String, Integer> map(String value) throws Exception {
                 return Tuple2.of(value, 1);
             }
-        });
+        }).setParallelism(1)
+                //设置共享组
+                .slotSharingGroup("group 1");
+
+                //与前面断开
+//                .startNewChain();
 
         //5.将相同单词的数据聚和到一块
         KeyedStream<Tuple2<String, Integer>, String> keyedStream = wordToOneStream.keyBy(new KeySelector<Tuple2<String, Integer>, String>() {
@@ -49,9 +60,9 @@ public class Flink03_Unbounded_WordCount {
         });
 
         //6.累加计算
-        SingleOutputStreamOperator<Tuple2<String, Integer>> result = keyedStream.sum(1);
+        SingleOutputStreamOperator<Tuple2<String, Integer>> result = keyedStream.sum(1).setParallelism(1);
 
-        result.print();
+        result.print().setParallelism(1);
 
         //开启任务
         env.execute();
