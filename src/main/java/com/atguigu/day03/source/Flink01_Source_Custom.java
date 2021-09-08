@@ -1,4 +1,4 @@
-package com.atguigu.day03.Source;
+package com.atguigu.day03.source;
 
 import com.atguigu.bean.WaterSensor;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
