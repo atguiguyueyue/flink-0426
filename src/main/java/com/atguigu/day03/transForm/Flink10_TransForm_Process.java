@@ -58,6 +58,7 @@ public class Flink10_TransForm_Process {
 
         //TODO 在KeyBy之后使用Process，实现Sum相类似的功能（对vc值进行累加）
         SingleOutputStreamOperator<WaterSensor> result = keyedStream.process(new KeyedProcessFunction<Tuple, WaterSensor, WaterSensor>() {
+
             //定义一个变量，用来保存累加后的vc结果
             private Integer vcSum = 0;
 
