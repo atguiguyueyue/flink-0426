@@ -19,13 +19,13 @@ import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 
-public class Flink02_WaterMark_ForBounded_EventTimeWindow_Tumbling {
+public class Flink07_WaterMark_ForBounded_EventTimeWindow_Tumbling_AllowedLateness {
     public static void main(String[] args) throws Exception {
         //1.获取流的执行环境
-//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        env.setParallelism(2);
+
+        env.setParallelism(1);
 
         //2.从端口读取数据
         DataStreamSource<String> streamSource = env.socketTextStream("localhost", 9999);
@@ -57,7 +57,9 @@ public class Flink02_WaterMark_ForBounded_EventTimeWindow_Tumbling {
         KeyedStream<WaterSensor, Tuple> keyedStream = waterSensorSingleOutputStreamOperator.keyBy("id");
 
         //6.开启一个基于事件时间的滚动窗口
-        WindowedStream<WaterSensor, Tuple, TimeWindow> window = keyedStream.window(TumblingEventTimeWindows.of(Time.seconds(5)));
+        WindowedStream<WaterSensor, Tuple, TimeWindow> window = keyedStream.window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                //运行迟到的数据
+                .allowedLateness(Time.seconds(2));
 
         window.process(new ProcessWindowFunction<WaterSensor, String, Tuple, TimeWindow>() {
             @Override
