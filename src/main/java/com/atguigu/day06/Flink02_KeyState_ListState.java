@@ -79,6 +79,7 @@ public class Flink02_KeyState_ListState {
             }
         }).print();
 
+
         env.execute();
     }
 }

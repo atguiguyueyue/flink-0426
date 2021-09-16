@@ -57,7 +57,7 @@ public class Flink04_CEP_CP_Mode {
 //                .next("end")
 //                .notNext("end")
                 //松散连续
-//                .followedBy("fallowedBy")
+                .followedBy("fallowedBy")
                 //非确定的松散连续
                 .followedByAny("end")
                 .where(new SimpleCondition<WaterSensor>() {

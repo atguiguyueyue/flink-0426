@@ -25,6 +25,7 @@ public class Flink01_WaterMark_ForMonotonous_EventTimeWindow_Tumbling {
 
         //2.从端口读取数据
         DataStreamSource<String> streamSource = env.socketTextStream("localhost", 9999);
+//        DataStreamSource<String> streamSource = env.readTextFile("input/sensor.txt");
 
         //3.将端口读过来数据转为WaterSensor
         SingleOutputStreamOperator<WaterSensor> waterSensorStream = streamSource.map(new MapFunction<String, WaterSensor>() {
